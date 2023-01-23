@@ -1,0 +1,1 @@
+# pjsekai-score-collection
