@@ -3,8 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"image"
+	"image/jpeg"
 	"os"
-
 	"os/exec"
 )
 
@@ -16,17 +17,50 @@ type Score struct {
 	Miss    string
 }
 
+type SubImager interface {
+	SubImage(r image.Rectangle) image.Image
+}
+
 func main() {
-	var img string
-	fmt.Scan(&img)
-	imgname := img
+	var openimg string
+	fmt.Scan(&openimg)
+
+	f, err := os.Open("./img/" + openimg)
+	if err != nil {
+		fmt.Println("open:", err)
+		return
+	}
+	defer f.Close()
+
+	img1, _, err := image.Decode(f)
+	if err != nil {
+		fmt.Println("decode:", err)
+		return
+	}
+
+	fso, err := os.Create("cut.jpg")
+	if err != nil {
+		fmt.Println("create:", err)
+		return
+	}
+	defer fso.Close()
+
+	cimg := img1.(SubImager).SubImage(image.Rect(950, 570, 1075, 820))
+
+	jpeg.Encode(fso, cimg, &jpeg.Options{Quality: 100})
+
+	// 数字取得
+	// var img2 string
+	// fmt.Scan(&img2)
+	// imgname := img2
+	imgname := "cut.jpg"
 	out, err := exec.Command("tesseract", imgname, "-", "-l", "eng").Output()
 	if err != nil {
 		fmt.Println(err)
 	}
-	os.WriteFile("test.txt", out, 0644)
+	os.WriteFile("score.txt", out, 0644)
 
-	fp, err := os.Open("test.txt")
+	fp, err := os.Open("score.txt")
 	if err != nil {
 		fmt.Println(err)
 	}
