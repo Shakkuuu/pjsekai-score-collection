@@ -114,10 +114,10 @@ func main() {
 	// fmt.Printf("楽曲名: %s, Perfect: %d, Great: %d, Good: %d, Bad: %d, Miss: %d", sc.Name, sc.Perfect, sc.Great, sc.Good, sc.Bad, sc.Miss)
 	fmt.Println(msg)
 
-	// addf, err := os.OpenFile("scorelist.txt", os.O_APPEND|os.O_WRONLY, 0644)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// fmt.Fprintln(addf, "aa")
+	addf, err := os.OpenFile("scorelist.txt", os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Fprintln(addf, msg)
 }
