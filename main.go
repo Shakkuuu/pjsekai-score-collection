@@ -7,40 +7,51 @@ import (
 	"image/jpeg"
 	"os"
 	"os/exec"
+	"strconv"
 )
 
 type Score struct {
-	Perfect string
-	Great   string
-	Good    string
-	Bad     string
-	Miss    string
+	Name    string
+	Perfect int
+	Great   int
+	Good    int
+	Bad     int
+	Miss    int
 }
 
 type SubImager interface {
 	SubImage(r image.Rectangle) image.Image
 }
 
+var (
+	openimg, name                   string
+	bbb                             []string
+	perfect, great, good, bad, miss int
+	atoierr                         error
+)
+
 func main() {
-	var openimg string
-	fmt.Scan(&openimg)
+	fmt.Print("画像ファイル名を入力してください: ")
+	fmt.Scanln(&openimg)
+	fmt.Print("楽曲名を入力してください: ")
+	fmt.Scanln(&name)
 
 	f, err := os.Open("./img/" + openimg)
 	if err != nil {
-		fmt.Println("open:", err)
+		fmt.Println("open err:", err)
 		return
 	}
 	defer f.Close()
 
 	img1, _, err := image.Decode(f)
 	if err != nil {
-		fmt.Println("decode:", err)
+		fmt.Println("decode err:", err)
 		return
 	}
 
 	fso, err := os.Create("cut.jpg")
 	if err != nil {
-		fmt.Println("create:", err)
+		fmt.Println("create err:", err)
 		return
 	}
 	defer fso.Close()
@@ -50,37 +61,47 @@ func main() {
 	jpeg.Encode(fso, cimg, &jpeg.Options{Quality: 100})
 
 	// 数字取得
-	// var img2 string
-	// fmt.Scan(&img2)
-	// imgname := img2
 	imgname := "cut.jpg"
-	out, err := exec.Command("tesseract", imgname, "-", "-l", "eng").Output()
+	out, err := exec.Command("tesseract", imgname, "-").Output()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("command err", err)
+		return
 	}
 	os.WriteFile("score.txt", out, 0644)
 
 	fp, err := os.Open("score.txt")
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("open err", err)
+		return
 	}
 	defer fp.Close()
 
 	scanner := bufio.NewScanner(fp)
 
-	var bbb []string
 	for scanner.Scan() {
 		fmt.Println(scanner.Text())
 		bbb = append(bbb, scanner.Text())
 	}
 	fmt.Println(bbb)
-	sc := Score{
-		Perfect: bbb[0],
-		Great:   bbb[1],
-		Good:    bbb[2],
-		Bad:     bbb[3],
-		Miss:    bbb[4],
+
+	perfect, atoierr = strconv.Atoi(bbb[0])
+	great, atoierr = strconv.Atoi(bbb[1])
+	good, atoierr = strconv.Atoi(bbb[2])
+	bad, atoierr = strconv.Atoi(bbb[3])
+	miss, atoierr = strconv.Atoi(bbb[4])
+
+	if atoierr != nil {
+		fmt.Println(err)
 	}
 
-	fmt.Printf("Perfect: %s, Great: %s, Good: %s, Bad: %s, Miss: %s", sc.Perfect, sc.Great, sc.Good, sc.Bad, sc.Miss)
+	sc := Score{
+		Name:    name,
+		Perfect: perfect,
+		Great:   great,
+		Good:    good,
+		Bad:     bad,
+		Miss:    miss,
+	}
+
+	fmt.Printf("楽曲名: %s, Perfect: %d, Great: %d, Good: %d, Bad: %d, Miss: %d", sc.Name, sc.Perfect, sc.Great, sc.Good, sc.Bad, sc.Miss)
 }
