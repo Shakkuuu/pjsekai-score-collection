@@ -34,7 +34,10 @@ func main() {
 	fmt.Print("画像ファイル名を入力してください: ")
 	fmt.Scanln(&openimg)
 	fmt.Print("楽曲名を入力してください: ")
-	fmt.Scanln(&name)
+	namebufio := bufio.NewScanner(os.Stdin)
+	namebufio.Scan()
+	name = namebufio.Text()
+	// fmt.Scanln(&name)
 
 	f, err := os.Open("./img/" + openimg)
 	if err != nil {
