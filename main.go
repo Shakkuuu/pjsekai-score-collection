@@ -12,11 +12,11 @@ import (
 
 type Score struct {
 	Name    string
-	Perfect int
-	Great   int
-	Good    int
-	Bad     int
-	Miss    int
+	Perfect string
+	Great   string
+	Good    string
+	Bad     string
+	Miss    string
 }
 
 type SubImager interface {
@@ -24,10 +24,10 @@ type SubImager interface {
 }
 
 var (
-	openimg, name                   string
-	bbb                             []string
-	perfect, great, good, bad, miss int
-	atoierr                         error
+	openimg, name, sperfect, sgreat, sgood, sbad, smiss string
+	bbb                                                 []string
+	iperfect, igreat, igood, ibad, imiss                int
+	atoierr                                             error
 )
 
 func main() {
@@ -84,24 +84,40 @@ func main() {
 	}
 	fmt.Println(bbb)
 
-	perfect, atoierr = strconv.Atoi(bbb[0])
-	great, atoierr = strconv.Atoi(bbb[1])
-	good, atoierr = strconv.Atoi(bbb[2])
-	bad, atoierr = strconv.Atoi(bbb[3])
-	miss, atoierr = strconv.Atoi(bbb[4])
-
+	// 頭の 0 削除
+	iperfect, atoierr = strconv.Atoi(bbb[0])
+	igreat, atoierr = strconv.Atoi(bbb[1])
+	igood, atoierr = strconv.Atoi(bbb[2])
+	ibad, atoierr = strconv.Atoi(bbb[3])
+	imiss, atoierr = strconv.Atoi(bbb[4])
 	if atoierr != nil {
 		fmt.Println(err)
 	}
 
+	// stringに戻す
+	sperfect = strconv.Itoa(iperfect)
+	sgreat = strconv.Itoa(igreat)
+	sgood = strconv.Itoa(igood)
+	sbad = strconv.Itoa(ibad)
+	smiss = strconv.Itoa(imiss)
+
 	sc := Score{
 		Name:    name,
-		Perfect: perfect,
-		Great:   great,
-		Good:    good,
-		Bad:     bad,
-		Miss:    miss,
+		Perfect: sperfect,
+		Great:   sgreat,
+		Good:    sgood,
+		Bad:     sbad,
+		Miss:    smiss,
 	}
 
-	fmt.Printf("楽曲名: %s, Perfect: %d, Great: %d, Good: %d, Bad: %d, Miss: %d", sc.Name, sc.Perfect, sc.Great, sc.Good, sc.Bad, sc.Miss)
+	msg := "楽曲名: " + sc.Name + ", Perfect: " + sc.Perfect + ", Great: " + sc.Great + ", Good: " + sc.Good + ", Bad: " + sc.Bad + ", Miss: " + sc.Miss
+	// fmt.Printf("楽曲名: %s, Perfect: %d, Great: %d, Good: %d, Bad: %d, Miss: %d", sc.Name, sc.Perfect, sc.Great, sc.Good, sc.Bad, sc.Miss)
+	fmt.Println(msg)
+
+	// addf, err := os.OpenFile("scorelist.txt", os.O_APPEND|os.O_WRONLY, 0644)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Fprintln(addf, "aa")
 }
