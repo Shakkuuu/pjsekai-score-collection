@@ -10,6 +10,7 @@ import (
 	"strconv"
 )
 
+// Score struct
 type Score struct {
 	Name    string
 	Perfect string
@@ -19,14 +20,15 @@ type Score struct {
 	Miss    string
 }
 
+// 画像加工用のインターフェイス
 type SubImager interface {
 	SubImage(r image.Rectangle) image.Image
 }
 
 var (
-	openimg, name, sperfect, sgreat, sgood, sbad, smiss string
-	bbb                                                 []string
-	iperfect, igreat, igood, ibad, imiss                int
+	openimg, name, sperfect, sgreat, sgood, sbad, smiss string   // s〇〇はstringのスコア
+	scanls                                              []string // tesseractで読み込んだ値の配列
+	iperfect, igreat, igood, ibad, imiss                int      // i〇〇はintのスコア
 	atoierr                                             error
 )
 
@@ -37,8 +39,8 @@ func main() {
 	namebufio := bufio.NewScanner(os.Stdin)
 	namebufio.Scan()
 	name = namebufio.Text()
-	// fmt.Scanln(&name)
 
+	// 指定された画像のオープン
 	f, err := os.Open("./img/" + openimg)
 	if err != nil {
 		fmt.Println("open err:", err)
@@ -59,13 +61,13 @@ func main() {
 	}
 	defer fso.Close()
 
-	cimg := img1.(SubImager).SubImage(image.Rect(950, 570, 1075, 820))
+	cimg := img1.(SubImager).SubImage(image.Rect(950, 570, 1075, 820)) // image.Rect(x0,y0,x1,y1) ここを変更して端末ごとのスクリーンショットに合わせる
 
 	jpeg.Encode(fso, cimg, &jpeg.Options{Quality: 100})
 
 	// 数字取得
 	imgname := "cut.jpg"
-	out, err := exec.Command("tesseract", imgname, "-").Output()
+	out, err := exec.Command("tesseract", imgname, "-").Output() // execでtesseract実行
 	if err != nil {
 		fmt.Println("command err", err)
 		return
@@ -79,20 +81,21 @@ func main() {
 	}
 	defer fp.Close()
 
+	// score.txtに出力されたスコアを取り出してリスト化
 	scanner := bufio.NewScanner(fp)
 
 	for scanner.Scan() {
 		fmt.Println(scanner.Text())
-		bbb = append(bbb, scanner.Text())
+		scanls = append(scanls, scanner.Text())
 	}
-	fmt.Println(bbb)
+	fmt.Println(scanls)
 
 	// 頭の 0 削除
-	iperfect, atoierr = strconv.Atoi(bbb[0])
-	igreat, atoierr = strconv.Atoi(bbb[1])
-	igood, atoierr = strconv.Atoi(bbb[2])
-	ibad, atoierr = strconv.Atoi(bbb[3])
-	imiss, atoierr = strconv.Atoi(bbb[4])
+	iperfect, atoierr = strconv.Atoi(scanls[0])
+	igreat, atoierr = strconv.Atoi(scanls[1])
+	igood, atoierr = strconv.Atoi(scanls[2])
+	ibad, atoierr = strconv.Atoi(scanls[3])
+	imiss, atoierr = strconv.Atoi(scanls[4])
 	if atoierr != nil {
 		fmt.Println(err)
 	}
@@ -104,6 +107,7 @@ func main() {
 	sbad = strconv.Itoa(ibad)
 	smiss = strconv.Itoa(imiss)
 
+	// 構造体に埋め込み
 	sc := Score{
 		Name:    name,
 		Perfect: sperfect,
@@ -117,6 +121,7 @@ func main() {
 	// fmt.Printf("楽曲名: %s, Perfect: %d, Great: %d, Good: %d, Bad: %d, Miss: %d", sc.Name, sc.Perfect, sc.Great, sc.Good, sc.Bad, sc.Miss)
 	fmt.Println(msg)
 
+	// scorelist.txtに保存。ファイルがない場合は作成
 	addf, err := os.OpenFile("scorelist.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		fmt.Println(err)
